@@ -1,0 +1,19 @@
+# Backend
+backend/venv/
+backend/app/uploads/*
+!backend/app/uploads/.gitkeep
+backend/app/database/faiss_index/*
+!backend/app/database/faiss_index/.gitkeep
+backend/app/database/*.db
+backend/app/logs/*.log*
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# OS
+.DS_Store

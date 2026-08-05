@@ -1,33 +1,24 @@
 import { useState, useEffect, useRef } from 'react'
-import Navbar from '../components/Navbar.jsx'
+import LeftNav from '../components/LeftNav.jsx'
 import Sidebar from '../components/Sidebar.jsx'
 import UploadBox from '../components/UploadBox.jsx'
 import ChatBox from '../components/ChatBox.jsx'
-import ConversationPanel from '../components/ConversationPanel.jsx'
-import { resetIndex, listDocuments, deleteDocument } from '../services/api.js'
+import { resetIndex, listDocuments, deleteDocument, getStats } from '../services/api.js'
 import { toast } from '../services/toast.js'
-
-const DARK_MODE_KEY = 'rag_dark_mode_v1'
+import { FileStack, MessageSquare, Percent, Layers } from 'lucide-react'
 
 export default function Home({ user, onLogout, onOpenAdmin }) {
   const [uploadedFiles, setUploadedFiles] = useState([])
   const [loadingDocs, setLoadingDocs] = useState(true)
   const [activeConversationId, setActiveConversationId] = useState(null)
   const [conversationListRefreshKey, setConversationListRefreshKey] = useState(0)
-  const [darkMode, setDarkMode] = useState(() => {
-    try {
-      return localStorage.getItem(DARK_MODE_KEY) === 'true'
-    } catch {
-      return false
-    }
-  })
+  const [view, setView] = useState('chat')
+  const [stats, setStats] = useState(null)
+  const [darkMode, setDarkMode] = useState(true)
   const chatBoxRef = useRef(null)
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode)
-    try {
-      localStorage.setItem(DARK_MODE_KEY, String(darkMode))
-    } catch {}
   }, [darkMode])
 
   useEffect(() => {
@@ -37,6 +28,12 @@ export default function Home({ user, onLogout, onOpenAdmin }) {
       .catch(() => setUploadedFiles([]))
       .finally(() => setLoadingDocs(false))
   }, [])
+
+  useEffect(() => {
+    if (view === 'analytics') {
+      getStats().then(setStats).catch(() => setStats(null))
+    }
+  }, [view])
 
   const handleUploadSuccess = (data) => {
     setUploadedFiles((prev) => [...prev, data])
@@ -63,59 +60,93 @@ export default function Home({ user, onLogout, onOpenAdmin }) {
     }
   }
 
-  const handleNewChat = () => {
-    setActiveConversationId(null)
-  }
-
-  const handleSelectConversation = (conversationId) => {
-    setActiveConversationId(conversationId)
-  }
-
-  const handleConversationCreated = (newConversationId) => {
-    setActiveConversationId(newConversationId)
+  const handleNewChat = () => setActiveConversationId(null)
+  const handleSelectConversation = (id) => setActiveConversationId(id)
+  const handleConversationCreated = (newId) => {
+    setActiveConversationId(newId)
     setConversationListRefreshKey((k) => k + 1)
   }
 
   return (
-    <div className="h-screen flex flex-col">
-      <Navbar
+    <div className="h-screen flex bg-[#0B0F19]">
+      <LeftNav
+        view={view}
+        onChangeView={(v) => { if (v === 'admin') onOpenAdmin(); else setView(v) }}
+        activeConversationId={activeConversationId}
+        onSelectConversation={handleSelectConversation}
+        onNewChat={handleNewChat}
         darkMode={darkMode}
         onToggleDarkMode={() => setDarkMode((d) => !d)}
-        onExportChat={() => chatBoxRef.current?.exportChat()}
         user={user}
         onLogout={onLogout}
-        onOpenAdmin={onOpenAdmin}
+        refreshKey={conversationListRefreshKey}
       />
-      <div className="flex flex-1 overflow-hidden">
-        <div className="flex flex-col">
-          <Sidebar
-            uploadedFiles={uploadedFiles}
-            loading={loadingDocs}
-            onReset={handleReset}
-            onDeleteDocument={handleDeleteDocument}
-          />
-          <div className="p-4 border-t border-gray-200 dark:border-gray-800">
-            <UploadBox onUploadSuccess={handleUploadSuccess} />
-          </div>
-        </div>
 
-        <main className="flex-1 bg-gray-50 dark:bg-gray-950">
+      <main className="flex-1 min-w-0">
+        {view === 'chat' && (
           <ChatBox
             ref={chatBoxRef}
             hasDocuments={uploadedFiles.length > 0}
             uploadedFiles={uploadedFiles}
             conversationId={activeConversationId}
             onConversationCreated={handleConversationCreated}
+            onGoToDocuments={() => setView('documents')}
+            onResetDocuments={handleReset}
+            onNewChat={handleNewChat}
           />
-        </main>
+        )}
 
-        <ConversationPanel
-          activeConversationId={activeConversationId}
-          onSelectConversation={handleSelectConversation}
-          onNewChat={handleNewChat}
-          refreshKey={conversationListRefreshKey}
-        />
+        {view === 'documents' && (
+          <div className="h-full overflow-y-auto p-8 bg-[#0B0F19]">
+            <div className="max-w-3xl mx-auto space-y-6">
+              <div>
+                <h1 className="text-xl font-semibold text-white">Uploaded Documents</h1>
+                <p className="text-sm text-gray-500 mt-1">Manage your knowledge base.</p>
+              </div>
+              <div className="glass-card rounded-2xl p-5">
+                <UploadBox onUploadSuccess={handleUploadSuccess} />
+              </div>
+              <div className="glass-card rounded-2xl overflow-hidden">
+                <Sidebar
+                  uploadedFiles={uploadedFiles}
+                  loading={loadingDocs}
+                  onReset={handleReset}
+                  onDeleteDocument={handleDeleteDocument}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {view === 'analytics' && (
+          <div className="h-full overflow-y-auto p-8 bg-[#0B0F19]">
+            <div className="max-w-4xl mx-auto space-y-6">
+              <div>
+                <h1 className="text-xl font-semibold text-white">Analytics</h1>
+                <p className="text-sm text-gray-500 mt-1">Your usage across this workspace.</p>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <StatCard icon={FileStack} label="Documents" value={stats?.total_documents ?? '—'} gradient="from-secondary-500 to-secondary-700" />
+                <StatCard icon={Layers} label="Total Chunks" value={stats?.total_chunks ?? '—'} gradient="from-accent-500 to-accent-700" />
+                <StatCard icon={MessageSquare} label="Your Queries" value={stats?.total_queries ?? '—'} gradient="from-brand-500 to-brand-700" />
+                <StatCard icon={Percent} label="Avg Confidence" value={stats ? `${stats.avg_confidence}%` : '—'} gradient="from-secondary-500 to-brand-500" />
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  )
+}
+
+function StatCard({ icon: Icon, label, value, gradient }) {
+  return (
+    <div className={`rounded-2xl p-5 bg-gradient-to-br ${gradient} shadow-glass`}>
+      <div className="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center mb-4">
+        <Icon className="w-4.5 h-4.5 text-white" />
       </div>
+      <p className="text-xs text-white/80">{label}</p>
+      <p className="text-2xl font-semibold text-white mt-1">{value}</p>
     </div>
   )
 }

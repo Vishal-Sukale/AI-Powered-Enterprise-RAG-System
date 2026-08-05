@@ -82,6 +82,22 @@ async def get_conversations(user: dict = Depends(get_current_user)):
 async def get_conversation_messages_route(conversation_id: int, user: dict = Depends(get_current_user)):
     return {"messages": conversations.get_conversation_messages(conversation_id, user["id"])}
 
+@router.get("/stats")
+async def get_stats(user: dict = Depends(get_current_user)):
+    docs = list_documents()
+    total_chunks = sum((d.get("chunks_indexed") or 0) for d in docs)
+    history = query_history.list_history(user_id=user["id"], limit=1000)
+    total_queries = len(history)
+    avg_confidence = (
+        round(sum((h.get("confidence") or 0) for h in history) / total_queries, 1)
+        if total_queries else 0.0
+    )
+    return {
+        "total_documents": len(docs),
+        "total_chunks": total_chunks,
+        "total_queries": total_queries,
+        "avg_confidence": avg_confidence,
+    }
 
 @router.delete("/conversations/{conversation_id}")
 async def delete_conversation_route(conversation_id: int, user: dict = Depends(get_current_user)):

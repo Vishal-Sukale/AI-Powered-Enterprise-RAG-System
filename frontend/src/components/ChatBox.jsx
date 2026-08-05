@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react'
-import { Send, Loader2, FileText } from 'lucide-react'
+import { Send, Loader2, FileText, Sparkles, UploadCloud, RotateCcw, Plus } from 'lucide-react'
 import ChatMessage from './ChatMessage.jsx'
 import SuggestedQuestions from './SuggestedQuestions.jsx'
 import { streamChatMessage, getSuggestedQuestions, getConversationMessages } from '../services/api.js'
 
 const ChatBox = forwardRef(function ChatBox(
-  { hasDocuments, uploadedFiles = [], conversationId, onConversationCreated },
+  { hasDocuments, uploadedFiles = [], conversationId, onConversationCreated, onGoToDocuments, onResetDocuments, onNewChat, userName },
   ref
 ) {
   const [messages, setMessages] = useState([])
@@ -148,69 +148,118 @@ const ChatBox = forwardRef(function ChatBox(
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {messages.length === 0 && (
-          <div className="h-full flex flex-col items-center justify-center text-center">
-            <p className="text-gray-400 dark:text-gray-500 text-sm">
-              {hasDocuments ? 'Ask a question about your uploaded documents.' : 'Upload a file from the sidebar to get started.'}
+    <div className="flex flex-col h-full bg-[#0B0F19]">
+      <div className="flex-1 overflow-y-auto">
+        {messages.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center px-6">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-secondary-500 flex items-center justify-center mb-5 shadow-glow">
+              <Sparkles className="w-7 h-7 text-white" />
+            </div>
+            <h1 className="text-2xl md:text-3xl font-semibold text-white mb-2 text-center">
+              What would you like to know today?
+            </h1>
+            <p className="text-gray-500 text-sm mb-8 text-center">
+              {hasDocuments ? 'Ask a question about your uploaded documents.' : 'Upload a file to get started.'}
             </p>
+
+            <div className="w-full max-w-2xl">
+              <div className="flex items-end gap-2 glass-card rounded-2xl p-2 shadow-glass">
+                <textarea
+                  rows={1}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Ask anything about your documents..."
+                  className="flex-1 resize-none bg-transparent text-gray-100 placeholder:text-gray-600 px-3 py-2.5 text-sm focus:outline-none"
+                />
+                <button
+                  onClick={handleSend}
+                  disabled={loading || !input.trim()}
+                  className="bg-gradient-to-r from-brand-500 to-secondary-500 disabled:opacity-30 text-white rounded-xl p-2.5 transition shrink-0"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
+                <QuickAction icon={UploadCloud} label="Upload Document" onClick={onGoToDocuments} />
+                <QuickAction icon={RotateCcw} label="Reset Documents" onClick={onResetDocuments} />
+                <QuickAction icon={Plus} label="New Chat" onClick={onNewChat} />
+              </div>
+            </div>
+
             <SuggestedQuestions questions={suggestedQuestions} onSelect={sendQuery} />
           </div>
-        )}
+        ) : (
+          <div className="p-6 space-y-6 max-w-3xl mx-auto">
+            {messages.map((msg, idx) => (
+              <ChatMessage key={idx} message={msg} onSelectQuestion={sendQuery} />
+            ))}
 
-        {messages.map((msg, idx) => (
-          <ChatMessage key={idx} message={msg} onSelectQuestion={sendQuery} />
-        ))}
+            {loading && messages[messages.length - 1]?.content === '' && (
+              <div className="flex items-center gap-2 text-gray-500 text-sm pl-11">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Thinking...
+              </div>
+            )}
 
-        {loading && messages[messages.length - 1]?.content === '' && (
-          <div className="flex items-center gap-2 text-gray-400 dark:text-gray-500 text-sm pl-11">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Thinking...
+            <div ref={bottomRef} />
           </div>
         )}
-
-        <div ref={bottomRef} />
       </div>
 
-      <div className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
-        <div className="max-w-3xl mx-auto">
-          {uploadedFiles.length > 0 && (
-            <div className="flex items-center gap-2 mb-2">
-              <FileText className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 shrink-0" />
-              <select
-                value={scopeFilename}
-                onChange={(e) => setScopeFilename(e.target.value)}
-                className="text-xs bg-transparent text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-brand-500 max-w-full truncate"
+      {messages.length > 0 && (
+        <div className="border-t border-white/[0.08] bg-[#0B0F19] p-4">
+          <div className="max-w-3xl mx-auto">
+            {uploadedFiles.length > 0 && (
+              <div className="flex items-center gap-2 mb-2">
+                <FileText className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+                <select
+                  value={scopeFilename}
+                  onChange={(e) => setScopeFilename(e.target.value)}
+                  className="text-xs bg-white/[0.04] text-gray-400 border border-white/[0.08] rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-brand-500 max-w-full truncate"
+                >
+                  <option value="">Search all documents</option>
+                  {uploadedFiles.map((f) => (
+                    <option key={f.filename} value={f.filename}>Only: {f.filename}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div className="flex items-end gap-2 glass-card rounded-2xl p-2">
+              <textarea
+                rows={1}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Ask something about your documents..."
+                className="flex-1 resize-none bg-transparent text-gray-100 placeholder:text-gray-600 px-3 py-2.5 text-sm focus:outline-none"
+              />
+              <button
+                onClick={handleSend}
+                disabled={loading || !input.trim()}
+                className="bg-gradient-to-r from-brand-500 to-secondary-500 disabled:opacity-30 text-white rounded-xl p-2.5 transition shrink-0"
               >
-                <option value="">Search all documents</option>
-                {uploadedFiles.map((f) => (
-                  <option key={f.filename} value={f.filename}>Only: {f.filename}</option>
-                ))}
-              </select>
+                <Send className="w-4 h-4" />
+              </button>
             </div>
-          )}
-          <div className="flex items-end gap-2">
-            <textarea
-              rows={1}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Ask something about your documents..."
-              className="flex-1 resize-none border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-            />
-            <button
-              onClick={handleSend}
-              disabled={loading || !input.trim()}
-              className="bg-brand-600 hover:bg-brand-700 disabled:opacity-40 text-white rounded-xl p-2.5 transition"
-            >
-              <Send className="w-4 h-4" />
-            </button>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 })
+
+function QuickAction({ icon: Icon, label, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-200 border border-white/[0.08] hover:border-white/20 rounded-full px-3 py-1.5 transition"
+    >
+      <Icon className="w-3.5 h-3.5" />
+      {label}
+    </button>
+  )
+}
 
 export default ChatBox

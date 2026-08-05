@@ -23,7 +23,7 @@ class LoginRequest(BaseModel):
 
 @router.post("/signup")
 async def signup(request: SignupRequest):
-    role = request.role if request.role in ALLOWED_ROLES else "employee"
+    role = request.role if request.role in ("employee", "guest") else "employee"
 
     with get_db() as conn:
         existing = conn.execute(

@@ -188,6 +188,11 @@ export async function getMyHistory(limit = 100) {
   return response.data
 }
 
+export async function getStats() {
+  const response = await api.get('/stats')
+  return response.data
+}
+
 // --- Admin-only endpoints ---
 export async function adminListDocuments() {
   const response = await api.get('/admin/documents')

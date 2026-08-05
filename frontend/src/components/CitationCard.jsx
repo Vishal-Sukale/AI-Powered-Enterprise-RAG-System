@@ -12,7 +12,7 @@ function renderWithHighlight(content, highlight) {
   return (
     <>
       {before}
-      <mark className="bg-yellow-200 dark:bg-yellow-500/30 text-inherit rounded px-0.5">
+      <mark className="bg-brand-500/30 text-inherit rounded px-0.5">
         {highlight}
       </mark>
       {after}
@@ -22,23 +22,23 @@ function renderWithHighlight(content, highlight) {
 
 export default function CitationCard({ source }) {
   return (
-    <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-sm">
+    <div className="bg-white/[0.03] border border-white/[0.08] rounded-lg p-3 text-sm backdrop-blur-xs">
       <div className="flex items-center justify-between mb-1 gap-2">
-        <div className="flex items-center gap-1 text-gray-600 dark:text-gray-300 font-medium min-w-0">
-          <FileText className="w-3.5 h-3.5 shrink-0" />
+        <div className="flex items-center gap-1 text-gray-300 font-medium min-w-0">
+          <FileText className="w-3.5 h-3.5 shrink-0 text-secondary-400" />
           <span className="truncate">{source.filename}</span>
         </div>
-        <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0 whitespace-nowrap">
+        <span className="text-xs text-gray-500 shrink-0 whitespace-nowrap">
           Page {source.page}
           {source.chunk_index ? ` · Chunk ${source.chunk_index}` : ''}
         </span>
       </div>
 
-      <p className="text-gray-500 dark:text-gray-400 text-xs leading-relaxed">
+      <p className="text-gray-400 text-xs leading-relaxed">
         {renderWithHighlight(source.content, source.highlight)}
       </p>
 
-      <p className="text-xs text-brand-600 dark:text-brand-400 mt-1 font-medium">
+      <p className="text-xs text-brand-400 mt-1 font-medium">
         Similarity: {source.similarity}%
       </p>
     </div>

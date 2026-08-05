@@ -5,14 +5,14 @@ import UploadBox from '../components/UploadBox.jsx'
 import ChatBox from '../components/ChatBox.jsx'
 import { resetIndex, listDocuments, deleteDocument, getStats } from '../services/api.js'
 import { toast } from '../services/toast.js'
-import { FileStack, MessageSquare, Percent, Layers } from 'lucide-react'
+import { FileStack, MessageSquare, Percent, Layers, ArrowLeft } from 'lucide-react'
 
 export default function Home({ user, onLogout, onOpenAdmin }) {
   const [uploadedFiles, setUploadedFiles] = useState([])
   const [loadingDocs, setLoadingDocs] = useState(true)
   const [activeConversationId, setActiveConversationId] = useState(null)
   const [conversationListRefreshKey, setConversationListRefreshKey] = useState(0)
-  const [view, setView] = useState('chat')
+  const [view, setView] = useState('chat') // 'chat' | 'documents' | 'analytics' | 'admin'
   const [stats, setStats] = useState(null)
   const [darkMode, setDarkMode] = useState(true)
   const chatBoxRef = useRef(null)
@@ -99,9 +99,18 @@ export default function Home({ user, onLogout, onOpenAdmin }) {
         {view === 'documents' && (
           <div className="h-full overflow-y-auto p-8 bg-[#0B0F19]">
             <div className="max-w-3xl mx-auto space-y-6">
-              <div>
-                <h1 className="text-xl font-semibold text-white">Uploaded Documents</h1>
-                <p className="text-sm text-gray-500 mt-1">Manage your knowledge base.</p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => { handleNewChat(); setView('chat') }}
+                  className="p-2 rounded-lg hover:bg-white/[0.06] text-gray-400 hover:text-white transition"
+                  title="Back to New Chat"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+                <div>
+                  <h1 className="text-xl font-semibold text-white">Uploaded Documents</h1>
+                  <p className="text-sm text-gray-500 mt-1">Manage your knowledge base.</p>
+                </div>
               </div>
               <div className="glass-card rounded-2xl p-5">
                 <UploadBox onUploadSuccess={handleUploadSuccess} />
@@ -121,9 +130,18 @@ export default function Home({ user, onLogout, onOpenAdmin }) {
         {view === 'analytics' && (
           <div className="h-full overflow-y-auto p-8 bg-[#0B0F19]">
             <div className="max-w-4xl mx-auto space-y-6">
-              <div>
-                <h1 className="text-xl font-semibold text-white">Analytics</h1>
-                <p className="text-sm text-gray-500 mt-1">Your usage across this workspace.</p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => { handleNewChat(); setView('chat') }}
+                  className="p-2 rounded-lg hover:bg-white/[0.06] text-gray-400 hover:text-white transition"
+                  title="Back to New Chat"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+                <div>
+                  <h1 className="text-xl font-semibold text-white">Analytics</h1>
+                  <p className="text-sm text-gray-500 mt-1">Your usage across this workspace.</p>
+                </div>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <StatCard icon={FileStack} label="Documents" value={stats?.total_documents ?? '—'} gradient="from-secondary-500 to-secondary-700" />

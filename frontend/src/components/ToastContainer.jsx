@@ -3,15 +3,15 @@ import { CheckCircle2, XCircle, Info } from 'lucide-react'
 import { subscribe } from '../services/toast.js'
 
 const ICONS = {
-  success: <CheckCircle2 className="w-4 h-4 text-green-500" />,
-  error: <XCircle className="w-4 h-4 text-red-500" />,
-  info: <Info className="w-4 h-4 text-blue-500" />,
+  success: <CheckCircle2 className="w-4 h-4 text-accent-400" />,
+  error: <XCircle className="w-4 h-4 text-red-400" />,
+  info: <Info className="w-4 h-4 text-secondary-400" />,
 }
 
 const STYLES = {
-  success: 'border-green-200 dark:border-green-900 bg-white dark:bg-gray-900',
-  error: 'border-red-200 dark:border-red-900 bg-white dark:bg-gray-900',
-  info: 'border-blue-200 dark:border-blue-900 bg-white dark:bg-gray-900',
+  success: 'border-accent-500/20 bg-[#111827]/95 backdrop-blur-xs',
+  error: 'border-red-500/20 bg-[#111827]/95 backdrop-blur-xs',
+  info: 'border-secondary-500/20 bg-[#111827]/95 backdrop-blur-xs',
 }
 
 export default function ToastContainer() {
@@ -28,7 +28,7 @@ export default function ToastContainer() {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className={`pointer-events-auto flex items-start gap-2 border rounded-xl shadow-lg px-4 py-3 text-sm text-gray-700 dark:text-gray-200 animate-[slideIn_0.2s_ease-out] ${STYLES[t.type]}`}
+          className={`pointer-events-auto flex items-start gap-2 border rounded-xl shadow-glass px-4 py-3 text-sm text-gray-200 animate-[slideIn_0.2s_ease-out] ${STYLES[t.type]}`}
         >
           {ICONS[t.type]}
           <span className="flex-1 leading-snug">{t.message}</span>

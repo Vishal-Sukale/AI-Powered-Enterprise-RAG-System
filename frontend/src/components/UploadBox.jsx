@@ -71,8 +71,8 @@ export default function UploadBox({ onUploadSuccess }) {
       onClick={() => inputRef.current?.click()}
       className={`group cursor-pointer border-2 border-dashed rounded-2xl px-5 py-7 text-center transition-all duration-200
         ${dragActive
-          ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/30 scale-[1.02] shadow-md'
-          : 'border-gray-400 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-brand-400 hover:bg-brand-50/40 dark:hover:bg-brand-950/20 hover:shadow-sm'}`}
+          ? 'border-brand-500 bg-brand-500/10 scale-[1.02] shadow-glow'
+          : 'border-white/[0.12] bg-white/[0.02] hover:border-brand-400/60 hover:bg-brand-500/5'}`}
     >
       <input
         ref={inputRef}
@@ -85,27 +85,27 @@ export default function UploadBox({ onUploadSuccess }) {
 
       {uploading ? (
         <div className="flex flex-col items-center gap-3 py-2">
-          <Loader2 className="w-8 h-8 text-brand-600 animate-spin" />
+          <Loader2 className="w-8 h-8 text-brand-400 animate-spin" />
           <div className="space-y-1">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-200 truncate max-w-[220px]">
+            <p className="text-sm font-medium text-gray-200 truncate max-w-[220px]">
               {currentFile}
             </p>
-            <p className="text-xs text-gray-400 dark:text-gray-500">
+            <p className="text-xs text-gray-500">
               {statusText}{progress > 0 && progress < 100 ? ` — ${progress}%` : '...'}
             </p>
           </div>
         </div>
       ) : (
         <div className="flex flex-col items-center gap-3">
-          <div className="w-14 h-14 rounded-2xl bg-brand-50 dark:bg-brand-950/40 flex items-center justify-center transition-transform duration-200 group-hover:scale-110 group-hover:-translate-y-0.5">
-            <UploadCloud className="w-7 h-7 text-brand-600" strokeWidth={1.75} />
+          <div className="w-14 h-14 rounded-2xl bg-brand-500/10 flex items-center justify-center transition-transform duration-200 group-hover:scale-110 group-hover:-translate-y-0.5">
+            <UploadCloud className="w-7 h-7 text-brand-400" strokeWidth={1.75} />
           </div>
 
           <div className="space-y-1">
-            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+            <p className="text-sm font-semibold text-gray-100">
               Drop files here
             </p>
-            <p className="text-xs text-gray-400 dark:text-gray-500">
+            <p className="text-xs text-gray-500">
               or click to browse
             </p>
           </div>
@@ -114,7 +114,7 @@ export default function UploadBox({ onUploadSuccess }) {
             {FORMAT_BADGES.map((badge) => (
               <span
                 key={badge}
-                className="text-[10px] font-medium tracking-wide px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+                className="text-[10px] font-medium tracking-wide px-1.5 py-0.5 rounded-md bg-white/[0.06] text-gray-400"
               >
                 {badge}
               </span>
